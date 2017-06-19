@@ -1,0 +1,8 @@
+<resources>
+    <!-- Default screen margins, per the Android Design guidelines. -->
+    <dimen name="card_view_content_padding">8dp</dimen>
+    <dimen name="card_view_basic_elevation">8dp</dimen>
+    <dimen name="big_circle">20dp</dimen>
+    <dimen name="small_circle">18dp</dimen>
+    <dimen name="dp_2">2dp</dimen>
+</resources>

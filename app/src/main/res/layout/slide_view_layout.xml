@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingLeft="10dp"
+    android:paddingRight="10dp">
+
+    <LinearLayout
+        android:id="@+id/top_view"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:gravity="center"
+        android:orientation="horizontal">
+
+        <CheckBox
+            android:id="@+id/close_cb"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:button="@drawable/alpha_selector"
+            android:checked="true"/>
+
+        <SeekBar
+            android:id="@+id/alpha_seekBar"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:progressDrawable="@drawable/po_seekbar"
+            android:thumb="@drawable/seekbar_thumb"/>
+
+        <CheckBox
+            android:id="@+id/drawer_down"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="10dp"
+            android:button="@drawable/check_selector"
+            android:checked="false"/>
+    </LinearLayout>
+
+    <RelativeLayout
+        android:id="@+id/below_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#66ffffff"
+        android:visibility="gone"
+        >
+
+        <RadioGroup
+            android:id="@+id/sw_choose"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:id="@+id/rb_0"
+                style="@style/rb_style"
+                android:drawableBottom="@drawable/check_selector_0"
+                />
+
+            <RadioButton
+                android:id="@+id/rb_2000"
+                style="@style/rb_style"
+                android:drawableBottom="@drawable/check_selector_2000"
+                />
+
+            <RadioButton
+                android:id="@+id/rb_2700"
+                style="@style/rb_style"
+                android:drawableBottom="@drawable/check_selector_2700"
+                />
+
+            <RadioButton
+                android:id="@+id/rb_3200"
+                style="@style/rb_style"
+                android:drawableBottom="@drawable/check_selector_3200"
+                />
+
+            <RadioButton
+                android:id="@+id/rb_3400"
+                style="@style/rb_style"
+                android:drawableBottom="@drawable/check_selector_3400"
+                />
+        </RadioGroup>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@id/sw_choose"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:id="@+id/setting"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:src="@drawable/ic_setting"/>
+
+            <SeekBar
+                android:id="@+id/sw_seekBar"
+                android:layout_width="0dp"
+                android:layout_height="?attr/actionBarSize"
+                android:layout_marginRight="44dp"
+                android:layout_weight="1"
+                android:progressDrawable="@drawable/po_seekbar"
+                android:thumb="@drawable/seekbar_thumb"
+                />
+        </LinearLayout>
+
+    </RelativeLayout>
+
+
+</LinearLayout>
