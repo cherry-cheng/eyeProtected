@@ -20,33 +20,19 @@ import android.widget.Toast;
 
 public class NightService extends Service {
 
-    private static String TAG = "NightService";
-    boolean mPause = false;
+    private boolean mPause = false;
     private WindowManager mWindowManager;
     private ImageView mImageView;
     private int mAdjustColor;
     private int mSwColor;
     private float mSwFractor;
     private float mAlpha;
-    private float mLastAlpha;
-    private RemoteViews mContentView;
     private MyReceiver mReceiver;
-    private int mWidthPixels;
-    private int mHeightPixels;
     private WindowManager.LayoutParams mLp;
-    private Notification.Builder mBuilder;
-    private PendingIntent mChangeIntent;
-    private PendingIntent mPauseIntent;
-    private PendingIntent mExitIntent;
-    private Messenger mReplyTo;
-    Messenger mMessenger = new Messenger(new Handler() {
+    private final Messenger mMessenger = new Messenger(new Handler() {
 
         @Override
         public void handleMessage(Message msg) {
-            if (mReplyTo == null) {
-                Log.e(TAG, "mReplyTo: " + mReplyTo);
-                mReplyTo = msg.replyTo;
-            }
             switch (msg.what) {
                 case Constans.SET_SW:
                     setSwColor(msg.arg1);
@@ -93,6 +79,7 @@ public class NightService extends Service {
     }
 
     private void setSwColor(int sw) {
+        SettingUtils.saveSwColorID(sw);
         switch (sw) {
             case R.id.rb_0:
                 mSwColor = mAdjustColor = getColor(R.color.transparent_dark);
@@ -135,10 +122,7 @@ public class NightService extends Service {
         IntentFilter filter = new IntentFilter();
         filter.addAction(Constans.ACTION_EXIT);
         filter.addAction(Constans.ACTION_PAUSE);
-
         registerReceiver(mReceiver, filter);
-
-
         return mMessenger.getBinder();
     }
 
@@ -148,48 +132,39 @@ public class NightService extends Service {
             mImageView = new ImageView(this);
             mImageView.setBackgroundColor(mAdjustColor);
             mImageView.setAlpha(mAlpha);
-            mWidthPixels = getResources().getDisplayMetrics().widthPixels;
-            mHeightPixels = getResources().getDisplayMetrics().heightPixels;
+            int widthPixels = getResources().getDisplayMetrics().widthPixels;
+            int heightPixels = getResources().getDisplayMetrics().heightPixels;
             mLp = new WindowManager.LayoutParams();
-            mLp.width = mWidthPixels;
-            mLp.height = mHeightPixels + 500;
+            mLp.width = widthPixels;
+            mLp.height = heightPixels + 500;
             mLp.type = WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY;
             mLp.flags |= 0x738;
             mLp.format = PixelFormat.RGBA_8888;
             mWindowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
             startFront(R.drawable.ic_pause);
             mWindowManager.addView(mImageView, mLp);
-        } else {
-            // mWindowManager.removeView(mImageView);
         }
-
-
         return START_NOT_STICKY;
     }
 
     private void startFront(int id) {
-//        if (mBuilder == null) {
-//
-//        }
         Intent brPause = new Intent(Constans.ACTION_PAUSE);
-
         Intent brExit = new Intent(Constans.ACTION_EXIT);
-
         Intent intent = new Intent(this, MainActivity.class);
         intent.putExtra("fromNotification", true);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        mChangeIntent = PendingIntent.getActivity(this, 1, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        mPauseIntent = PendingIntent.getBroadcast(this, 2, brPause, PendingIntent.FLAG_UPDATE_CURRENT);
-        mExitIntent = PendingIntent.getBroadcast(this, 3, brExit, PendingIntent.FLAG_UPDATE_CURRENT);
-        mContentView = new RemoteViews(getPackageName(), R.layout.notify_layout);
-        mContentView.setOnClickPendingIntent(R.id.change, mChangeIntent);
-        mContentView.setOnClickPendingIntent(R.id.pause, mPauseIntent);
-        mContentView.setOnClickPendingIntent(R.id.exit, mExitIntent);
-        mBuilder = new Notification.Builder(this)
+        PendingIntent changeIntent = PendingIntent.getActivity(this, 1, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent pauseIntent = PendingIntent.getBroadcast(this, 2, brPause, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent exitIntent = PendingIntent.getBroadcast(this, 3, brExit, PendingIntent.FLAG_UPDATE_CURRENT);
+        RemoteViews contentView = new RemoteViews(getPackageName(), R.layout.notify_layout);
+        contentView.setOnClickPendingIntent(R.id.change, changeIntent);
+        contentView.setOnClickPendingIntent(R.id.pause, pauseIntent);
+        contentView.setOnClickPendingIntent(R.id.exit, exitIntent);
+        Notification.Builder builder = new Notification.Builder(this)
                 .setSmallIcon(R.drawable.ic_small_icon)
-                .setContent(mContentView);
-        mContentView.setImageViewResource(R.id.pause, id);
-        startForeground(1, mBuilder.build());
+                .setContent(contentView);
+        contentView.setImageViewResource(R.id.pause, id);
+        startForeground(1, builder.build());
     }
 
     @Override
@@ -201,7 +176,7 @@ public class NightService extends Service {
         }
     }
 
-    public float getSwFractor() {
+    private float getSwFractor() {
         return mSwFractor;
     }
 
@@ -216,7 +191,6 @@ public class NightService extends Service {
                     restart();
                 }
             } else if (intent.getAction().equals(Constans.ACTION_EXIT)) {
-                Toast.makeText(context, "EXit", Toast.LENGTH_SHORT).show();
                 System.exit(0);
             }
         }

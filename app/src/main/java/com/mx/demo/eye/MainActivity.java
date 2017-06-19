@@ -27,7 +27,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 
 
     private static String TAG = "MainActivity";
-    boolean fromMessage = false;
+    private boolean fromMessage = false;
     private Intent mService;
     private SeekBar mAlphaSeekbar;
     private ServiceConnection mCon;
@@ -44,8 +44,8 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mService = new Intent(this, NightService.class);
         setContentView(R.layout.slide_view_layout);
+        mService = new Intent(this, NightService.class);
         WindowManager.LayoutParams lp = getWindow().getAttributes();
         lp.width = getWindowManager().getDefaultDisplay().getWidth();
         getWindow().setAttributes(lp);
@@ -54,28 +54,43 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         initProp();
         bindAndStartServiceIfNeed();
 
+
     }
 
-
+    @Override
+    protected void onStart() {
+        super.onStart();
+        mReceiver = new MyReceiver();
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(Constans.ACTION_PAUSE);
+        registerReceiver(mReceiver, filter);
+    }
 
     private void syncState() {
-        if (SettingUtils.isPause()) {
-            mCloseCB.setChecked(false);
-        } else {
-            mCloseCB.setChecked(true);
+        if (getIntent().getBooleanExtra("fromNotification", false)) {
+            if (SettingUtils.isPause()) {
+                mCloseCB.setChecked(false);
+            } else {
+                mCloseCB.setChecked(true);
+            }
         }
+        int colorID = SettingUtils.getSwColorID();
+        Log.e(TAG, "syncState: colorID: "+colorID );
+        swChoose.check(colorID);
+
+        float alpha = SettingUtils.getAlpha();
+        mAlphaSeekbar.setProgress((int) (alpha * mAlphaSeekbar.getMax()));
+
+        int progress = SettingUtils.getSwColorProgress();
+        swSeekBar.setProgress(swSeekBar.getMax() - progress * swSeekBar.getMax());
     }
 
     private void initProp() {
         swSeekBar.setMax(220);
         swSeekBar.setOnSeekBarChangeListener(this);
-        int progress = SettingUtils.getSwColorProgress();
-        swSeekBar.setProgress(swSeekBar.getMax() - progress * swSeekBar.getMax());
 
         mAlphaSeekbar.setMax(220);
         mAlphaSeekbar.setOnSeekBarChangeListener(this);
-        float alpha = SettingUtils.getAlpha();
-        mAlphaSeekbar.setProgress((int) (alpha * mAlphaSeekbar.getMax()));
 
         swChoose.setOnCheckedChangeListener(this);
 
@@ -86,7 +101,6 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
                     fromMessage = false;
                     return;
                 }
-                Log.e("MAIN", "onCheckedChanged: " + "");
                 if (!isChecked) {
                     sendMessageToServer(Constans.PAUSE, 0);
                 } else {
@@ -133,10 +147,8 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         mDrawDownCB = (CheckBox) findViewById(R.id.drawer_down);
         mAlphaSeekbar = (SeekBar) findViewById(R.id.alpha_seekBar);
         swChoose = (RadioGroup) findViewById(R.id.sw_choose);
-        swChoose.check(R.id.rb_0);
         swSeekBar = (SeekBar) findViewById(R.id.sw_seekBar);
         belowView = (RelativeLayout) findViewById(R.id.below_view);
-
         mSetting = findViewById(R.id.setting);
     }
 
@@ -164,17 +176,12 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         }
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        if (getIntent().getBooleanExtra("fromNotification", false))
-            syncState();
-        mReceiver = new MyReceiver();
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(Constans.ACTION_PAUSE);
-        registerReceiver(mReceiver, filter);
-    }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        syncState();
+    }
 
     @Override
     public void onStartTrackingTouch(SeekBar seekBar) {
