@@ -75,7 +75,6 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
             }
         }
         int colorID = SettingUtils.getSwColorID();
-        Log.e(TAG, "syncState: colorID: "+colorID );
         swChoose.check(colorID);
 
         float alpha = SettingUtils.getAlpha();
@@ -182,6 +181,8 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         super.onResume();
         syncState();
     }
+
+
 
     @Override
     public void onStartTrackingTouch(SeekBar seekBar) {

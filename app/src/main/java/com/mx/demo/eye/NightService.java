@@ -1,6 +1,7 @@
 package com.mx.demo.eye;
 
 import android.app.Notification;
+import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
@@ -125,9 +126,15 @@ public class NightService extends Service {
         registerReceiver(mReceiver, filter);
         return mMessenger.getBinder();
     }
-
+    private void clear() {
+        mImageView = null;
+        mLp = null;
+        NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+        nm.cancel(1);
+    }
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        clear();
         if (mImageView == null) {
             mImageView = new ImageView(this);
             mImageView.setBackgroundColor(mAdjustColor);
@@ -147,12 +154,15 @@ public class NightService extends Service {
         return START_NOT_STICKY;
     }
 
+
+
     private void startFront(int id) {
         Intent brPause = new Intent(Constans.ACTION_PAUSE);
         Intent brExit = new Intent(Constans.ACTION_EXIT);
         Intent intent = new Intent(this, MainActivity.class);
         intent.putExtra("fromNotification", true);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent changeIntent = PendingIntent.getActivity(this, 1, intent, PendingIntent.FLAG_UPDATE_CURRENT);
         PendingIntent pauseIntent = PendingIntent.getBroadcast(this, 2, brPause, PendingIntent.FLAG_UPDATE_CURRENT);
         PendingIntent exitIntent = PendingIntent.getBroadcast(this, 3, brExit, PendingIntent.FLAG_UPDATE_CURRENT);
