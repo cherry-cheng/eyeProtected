@@ -13,15 +13,15 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
-import android.util.Log;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.RemoteViews;
-import android.widget.Toast;
+
+import static android.view.WindowManager.LayoutParams.FLAG_FULLSCREEN;
+import static android.view.WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION;
 
 public class NightService extends Service {
 
-    private boolean mPause = false;
     private WindowManager mWindowManager;
     private ImageView mImageView;
     private int mAdjustColor;
@@ -62,7 +62,6 @@ public class NightService extends Service {
     }
 
     private void restart() {
-        mPause = false;
         if (mImageView != null) {
             mWindowManager.addView(mImageView, mLp);
         }
@@ -71,7 +70,6 @@ public class NightService extends Service {
     }
 
     private void pause() {
-        mPause = true;
         if (mImageView != null) {
             mWindowManager.removeView(mImageView);
         }
@@ -126,15 +124,11 @@ public class NightService extends Service {
         registerReceiver(mReceiver, filter);
         return mMessenger.getBinder();
     }
-    private void clear() {
-        mImageView = null;
-        mLp = null;
-        NotificationManager nm = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-        nm.cancel(1);
-    }
+
+
+
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        clear();
         if (mImageView == null) {
             mImageView = new ImageView(this);
             mImageView.setBackgroundColor(mAdjustColor);
@@ -155,17 +149,15 @@ public class NightService extends Service {
     }
 
 
-
     private void startFront(int id) {
+        stopForeground(false);
         Intent brPause = new Intent(Constans.ACTION_PAUSE);
         Intent brExit = new Intent(Constans.ACTION_EXIT);
         Intent intent = new Intent(this, MainActivity.class);
-        intent.putExtra("fromNotification", true);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent changeIntent = PendingIntent.getActivity(this, 1, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        PendingIntent pauseIntent = PendingIntent.getBroadcast(this, 2, brPause, PendingIntent.FLAG_UPDATE_CURRENT);
-        PendingIntent exitIntent = PendingIntent.getBroadcast(this, 3, brExit, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent pauseIntent = PendingIntent.getBroadcast(this, 2, brPause, Intent.FILL_IN_ACTION);
+        PendingIntent exitIntent = PendingIntent.getBroadcast(this, 3, brExit,Intent.FILL_IN_ACTION);
         RemoteViews contentView = new RemoteViews(getPackageName(), R.layout.notify_layout);
         contentView.setOnClickPendingIntent(R.id.change, changeIntent);
         contentView.setOnClickPendingIntent(R.id.pause, pauseIntent);
@@ -195,7 +187,7 @@ public class NightService extends Service {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equals(Constans.ACTION_PAUSE)) {
-                if (!mPause) {
+                if (SettingUtils.isPause()) {
                     pause();
                 } else {
                     restart();

@@ -13,7 +13,6 @@ import android.os.Messenger;
 import android.os.RemoteException;
 import android.support.annotation.IdRes;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.CheckBox;
@@ -27,7 +26,6 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 
 
     private static String TAG = "MainActivity";
-    private boolean fromMessage = false;
     private Intent mService;
     private SeekBar mAlphaSeekbar;
     private ServiceConnection mCon;
@@ -45,15 +43,15 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.slide_view_layout);
-        mService = new Intent(this, NightService.class);
         WindowManager.LayoutParams lp = getWindow().getAttributes();
         lp.width = getWindowManager().getDefaultDisplay().getWidth();
         getWindow().setAttributes(lp);
 
         initView();
         initProp();
-        bindAndStartServiceIfNeed();
 
+        mService = new Intent(this, NightService.class);
+        bindAndStartServiceIfNeed();
 
     }
 
@@ -67,12 +65,10 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
     }
 
     private void syncState() {
-        if (getIntent().getBooleanExtra("fromNotification", false)) {
-            if (SettingUtils.isPause()) {
-                mCloseCB.setChecked(false);
-            } else {
-                mCloseCB.setChecked(true);
-            }
+        if (SettingUtils.isPause()) {
+            mCloseCB.setChecked(false);
+        } else {
+            mCloseCB.setChecked(true);
         }
         int colorID = SettingUtils.getSwColorID();
         swChoose.check(colorID);
@@ -96,27 +92,15 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         mCloseCB.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (fromMessage) {
-                    fromMessage = false;
-                    return;
-                }
-                if (!isChecked) {
-                    sendMessageToServer(Constans.PAUSE, 0);
-                } else {
-                    sendMessageToServer(Constans.RESTART, 0);
-                }
-
+                SettingUtils.savePause(!isChecked);
+                sendMessageToServer(!isChecked ? Constans.PAUSE : Constans.RESTART, 0);
             }
         });
 
         mDrawDownCB.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                if (mDrawDownCB.isChecked()) {
-                    belowView.setVisibility(View.VISIBLE);
-                } else {
-                    belowView.setVisibility(View.GONE);
-                }
+                belowView.setVisibility(mDrawDownCB.isChecked() ? View.VISIBLE : View.GONE);
             }
         });
 
@@ -138,6 +122,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         }
         if (mService != null) {
             unregisterReceiver(mReceiver);
+            mService = null;
         }
     }
 
@@ -183,7 +168,6 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
     }
 
 
-
     @Override
     public void onStartTrackingTouch(SeekBar seekBar) {
         bindAndStartServiceIfNeed();
@@ -223,12 +207,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equals(Constans.ACTION_PAUSE)) {
-                fromMessage = true;
-                if (mCloseCB.isChecked()) {
-                    mCloseCB.setChecked(false);
-                } else {
-                    mCloseCB.setChecked(true);
-                }
+                mCloseCB.setChecked(!mCloseCB.isChecked());
             }
         }
     }
