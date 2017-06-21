@@ -65,20 +65,20 @@ class SettingUtils {
         SharedPreferences sp = APP.getApplication().getSharedPreferences(SETTING, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sp.edit();
         editor.putBoolean(name, state);
-        editor.apply();
+        editor.commit();
     }
     private static void saveFloatSetting(String name, float state) {
         SharedPreferences sp = APP.getApplication().getSharedPreferences(SETTING, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sp.edit();
         editor.putFloat(name, state);
-        editor.apply();
+        editor.commit();
     }
 
     private static void saveIntSetting(String name, int state) {
         SharedPreferences sp = APP.getApplication().getSharedPreferences(SETTING, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sp.edit();
         editor.putInt(name, state);
-        editor.apply();
+        editor.commit();
     }
 
     private static float getFloatSetting(String name,float def) {

@@ -135,9 +135,10 @@ public class NightService extends Service {
             mImageView.setAlpha(mAlpha);
             int widthPixels = getResources().getDisplayMetrics().widthPixels;
             int heightPixels = getResources().getDisplayMetrics().heightPixels;
+            int max = Math.max(widthPixels, heightPixels) + 500;
             mLp = new WindowManager.LayoutParams();
-            mLp.width = widthPixels;
-            mLp.height = heightPixels + 500;
+            mLp.width = max;
+            mLp.height = max;
             mLp.type = WindowManager.LayoutParams.TYPE_SYSTEM_OVERLAY;
             mLp.flags |= 0x738;
             mLp.format = PixelFormat.RGBA_8888;
