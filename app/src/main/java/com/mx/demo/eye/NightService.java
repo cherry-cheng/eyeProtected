@@ -1,7 +1,6 @@
 package com.mx.demo.eye;
 
 import android.app.Notification;
-import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
 import android.content.BroadcastReceiver;
@@ -13,12 +12,10 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
+import android.support.annotation.DrawableRes;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.RemoteViews;
-
-import static android.view.WindowManager.LayoutParams.FLAG_FULLSCREEN;
-import static android.view.WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION;
 
 public class NightService extends Service {
 
@@ -30,6 +27,9 @@ public class NightService extends Service {
     private float mAlpha;
     private MyReceiver mReceiver;
     private WindowManager.LayoutParams mLp;
+    private RemoteViews mContentView;
+    private Notification.Builder mBuilder;
+    private boolean mIsPaused;
     private final Messenger mMessenger = new Messenger(new Handler() {
 
         @Override
@@ -62,19 +62,23 @@ public class NightService extends Service {
     }
 
     private void restart() {
-        if (mImageView != null) {
-            mWindowManager.addView(mImageView, mLp);
-        }
+
+        mImageView = new ImageView(this);
+        mImageView.setBackgroundColor(mAdjustColor);
+        mImageView.setAlpha(mAlpha);
+
+        mWindowManager.addView(mImageView, mLp);
+
+        mIsPaused = false;
         startFront(R.drawable.ic_pause);
-        SettingUtils.savePause(false);
     }
 
     private void pause() {
-        if (mImageView != null) {
-            mWindowManager.removeView(mImageView);
-        }
+        mWindowManager.removeView(mImageView);
+        mImageView = null;
+
+        mIsPaused = true;
         startFront(R.drawable.ic_start);
-        SettingUtils.savePause(true);
     }
 
     private void setSwColor(int sw) {
@@ -126,7 +130,6 @@ public class NightService extends Service {
     }
 
 
-
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (mImageView == null) {
@@ -143,31 +146,35 @@ public class NightService extends Service {
             mLp.flags |= 0x738;
             mLp.format = PixelFormat.RGBA_8888;
             mWindowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
-            startFront(R.drawable.ic_pause);
             mWindowManager.addView(mImageView, mLp);
+            startFront(R.drawable.ic_pause);
         }
-        return START_NOT_STICKY;
+        return START_STICKY;
     }
 
 
-    private void startFront(int id) {
-        stopForeground(false);
+    private void startFront(@DrawableRes int id) {
+
+//        if (mContentView == null) {
         Intent brPause = new Intent(Constans.ACTION_PAUSE);
         Intent brExit = new Intent(Constans.ACTION_EXIT);
         Intent intent = new Intent(this, MainActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
         PendingIntent changeIntent = PendingIntent.getActivity(this, 1, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        PendingIntent pauseIntent = PendingIntent.getBroadcast(this, 2, brPause, Intent.FILL_IN_ACTION);
-        PendingIntent exitIntent = PendingIntent.getBroadcast(this, 3, brExit,Intent.FILL_IN_ACTION);
-        RemoteViews contentView = new RemoteViews(getPackageName(), R.layout.notify_layout);
-        contentView.setOnClickPendingIntent(R.id.change, changeIntent);
-        contentView.setOnClickPendingIntent(R.id.pause, pauseIntent);
-        contentView.setOnClickPendingIntent(R.id.exit, exitIntent);
-        Notification.Builder builder = new Notification.Builder(this)
-                .setSmallIcon(R.drawable.ic_small_icon)
-                .setContent(contentView);
-        contentView.setImageViewResource(R.id.pause, id);
-        startForeground(1, builder.build());
+        PendingIntent pauseIntent = PendingIntent.getBroadcast(this, 2, brPause, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent exitIntent = PendingIntent.getBroadcast(this, 3, brExit, PendingIntent.FLAG_CANCEL_CURRENT);
+
+        mContentView = new RemoteViews(getPackageName(), R.layout.notify_layout);
+        mContentView.setOnClickPendingIntent(R.id.change, changeIntent);
+        mContentView.setOnClickPendingIntent(R.id.pause, pauseIntent);
+        mContentView.setOnClickPendingIntent(R.id.exit, exitIntent);
+        mBuilder = new Notification.Builder(this)
+                .setSmallIcon(R.drawable.ic_small_icon);
+//        }
+        mContentView.setImageViewResource(R.id.pause, id);
+        mBuilder.setContent(mContentView);
+        startForeground(1, mBuilder.build());
     }
 
     @Override
@@ -188,12 +195,15 @@ public class NightService extends Service {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (intent.getAction().equals(Constans.ACTION_PAUSE)) {
-                if (SettingUtils.isPause()) {
+                if (!mIsPaused) {
                     pause();
                 } else {
                     restart();
                 }
             } else if (intent.getAction().equals(Constans.ACTION_EXIT)) {
+                stopForeground(true);
+                stopSelf();
+                android.os.Process.killProcess(android.os.Process.myPid());
                 System.exit(0);
             }
         }

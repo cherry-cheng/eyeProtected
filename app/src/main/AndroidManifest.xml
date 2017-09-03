@@ -3,9 +3,6 @@
           package="com.mx.demo.eye">
 
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
-    <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.CAMERA"/>
-    <uses-permission android:name="android.permission.READ_CONTACTS"/>
 
     <application
         android:name="com.mx.demo.eye.APP"
@@ -16,7 +13,8 @@
         android:theme="@style/AppTheme">
         <activity
             android:name="com.mx.demo.eye.MainActivity"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:theme="@style/AppTheme.NoActionBar"
+            android:launchMode="singleTask">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
 

@@ -1,18 +1,26 @@
 package com.mx.demo.eye;
 
+import android.Manifest;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
+import android.provider.Settings;
 import android.support.annotation.IdRes;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.CheckBox;
@@ -25,6 +33,7 @@ import android.widget.Toast;
 public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBarChangeListener, RadioGroup.OnCheckedChangeListener {
 
 
+    private static final int OVERLAY_PERMISSION_REQ_CODE = 111;
     private static String TAG = "MainActivity";
     private Intent mService;
     private SeekBar mAlphaSeekbar;
@@ -52,8 +61,29 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 
         mService = new Intent(this, NightService.class);
         bindAndStartServiceIfNeed();
-
     }
+
+
+
+    private void showNeedPermissionsMessage() {
+        if (!Settings.canDrawOverlays(MainActivity.this)) {
+            Toast.makeText(this, "请授予必要的权限", Toast.LENGTH_SHORT).show();
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    Intent intent = new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + MainActivity.this.getPackageName()));
+                    startActivity(intent);
+                }
+            }, 500);
+
+        } else {
+            // Already hold the SYSTEM_ALERT_WINDOW permission, do addview or something.
+        }
+    }
+
+
+
+
 
     @Override
     protected void onStart() {
@@ -165,6 +195,7 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
     protected void onResume() {
         super.onResume();
         syncState();
+        showNeedPermissionsMessage();
     }
 
 
