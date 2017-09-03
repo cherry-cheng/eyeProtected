@@ -3,7 +3,7 @@
           package="com.mx.demo.eye">
 
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
-
+    <permission android:name="android.permission.STATUS_BAR_SERVICE" android:protectionLevel="signature" />
     <application
         android:name="com.mx.demo.eye.APP"
         android:allowBackup="true"

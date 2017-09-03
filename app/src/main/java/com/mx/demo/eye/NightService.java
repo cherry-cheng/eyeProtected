@@ -155,23 +155,23 @@ public class NightService extends Service {
 
     private void startFront(@DrawableRes int id) {
 
-//        if (mContentView == null) {
-        Intent brPause = new Intent(Constans.ACTION_PAUSE);
-        Intent brExit = new Intent(Constans.ACTION_EXIT);
-        Intent intent = new Intent(this, MainActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        if (mContentView == null) {
+            Intent brPause = new Intent(Constans.ACTION_PAUSE);
+            Intent brExit = new Intent(Constans.ACTION_EXIT);
+            Intent intent = new Intent(this, MainActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
-        PendingIntent changeIntent = PendingIntent.getActivity(this, 1, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-        PendingIntent pauseIntent = PendingIntent.getBroadcast(this, 2, brPause, PendingIntent.FLAG_UPDATE_CURRENT);
-        PendingIntent exitIntent = PendingIntent.getBroadcast(this, 3, brExit, PendingIntent.FLAG_CANCEL_CURRENT);
+            PendingIntent changeIntent = PendingIntent.getActivity(this, 1, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+            PendingIntent pauseIntent = PendingIntent.getBroadcast(this, 2, brPause, PendingIntent.FLAG_UPDATE_CURRENT);
+            PendingIntent exitIntent = PendingIntent.getBroadcast(this, 3, brExit, PendingIntent.FLAG_CANCEL_CURRENT);
 
-        mContentView = new RemoteViews(getPackageName(), R.layout.notify_layout);
-        mContentView.setOnClickPendingIntent(R.id.change, changeIntent);
-        mContentView.setOnClickPendingIntent(R.id.pause, pauseIntent);
-        mContentView.setOnClickPendingIntent(R.id.exit, exitIntent);
-        mBuilder = new Notification.Builder(this)
-                .setSmallIcon(R.drawable.ic_small_icon);
-//        }
+            mContentView = new RemoteViews(getPackageName(), R.layout.notify_layout);
+            mContentView.setOnClickPendingIntent(R.id.change, changeIntent);
+            mContentView.setOnClickPendingIntent(R.id.pause, pauseIntent);
+            mContentView.setOnClickPendingIntent(R.id.exit, exitIntent);
+            mBuilder = new Notification.Builder(this)
+                    .setSmallIcon(R.drawable.ic_small_icon);
+        }
         mContentView.setImageViewResource(R.id.pause, id);
         mBuilder.setContent(mContentView);
         startForeground(1, mBuilder.build());
@@ -184,6 +184,9 @@ public class NightService extends Service {
         if (mReceiver != null) {
             unregisterReceiver(mReceiver);
         }
+        stopForeground(true);
+        stopSelf();
+        System.exit(0);
     }
 
     private float getSwFractor() {
