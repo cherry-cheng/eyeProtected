@@ -62,6 +62,10 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
 
         mService = new Intent(this, NightService.class);
         bindAndStartServiceIfNeed();
+        mReceiver = new MyReceiver();
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(Constans.ACTION_PAUSE);
+        registerReceiver(mReceiver, filter);
     }
 
 
@@ -87,10 +91,6 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
     @Override
     protected void onStart() {
         super.onStart();
-        mReceiver = new MyReceiver();
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(Constans.ACTION_PAUSE);
-        registerReceiver(mReceiver, filter);
     }
 
     private void syncState() {
