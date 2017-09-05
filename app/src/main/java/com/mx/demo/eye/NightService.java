@@ -62,6 +62,7 @@ public class NightService extends Service {
     }
 
     private void restart() {
+        startFront(R.drawable.ic_pause);
 
         mImageView = new ImageView(this);
         mImageView.setBackgroundColor(mAdjustColor);
@@ -70,15 +71,14 @@ public class NightService extends Service {
         mWindowManager.addView(mImageView, mLp);
 
         mIsPaused = false;
-        startFront(R.drawable.ic_pause);
     }
 
     private void pause() {
-        mWindowManager.removeView(mImageView);
+        startFront(R.drawable.ic_start);
+        mWindowManager.removeViewImmediate(mImageView);
         mImageView = null;
 
         mIsPaused = true;
-        startFront(R.drawable.ic_start);
     }
 
     private void setSwColor(int sw) {
@@ -149,7 +149,7 @@ public class NightService extends Service {
             mWindowManager.addView(mImageView, mLp);
             startFront(R.drawable.ic_pause);
         }
-        return START_STICKY;
+        return START_NOT_STICKY;
     }
 
 

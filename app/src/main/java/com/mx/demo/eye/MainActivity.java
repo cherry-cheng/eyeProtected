@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
@@ -76,8 +77,6 @@ public class MainActivity extends AppCompatActivity implements SeekBar.OnSeekBar
                 }
             }, 500);
 
-        } else {
-            // Already hold the SYSTEM_ALERT_WINDOW permission, do addview or something.
         }
     }
 
